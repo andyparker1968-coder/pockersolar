@@ -1,7 +1,8 @@
 import path from 'path';
+import fs from 'fs';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -27,12 +28,32 @@ if (!basePath) {
   );
 }
 
+// Keep the installable app's manifest aligned with the routed artifact path.
+function pwaManifestPlugin(): Plugin {
+  return {
+    name: 'pwa-manifest',
+    generateBundle() {
+      const templatePath = path.resolve(import.meta.dirname, 'public/manifest.json');
+      const template = JSON.parse(fs.readFileSync(templatePath, 'utf-8'));
+      const scopeUrl = basePath.endsWith('/') ? basePath : `${basePath}/`;
+      template.start_url = scopeUrl;
+      template.scope = scopeUrl;
+      this.emitFile({
+        type: 'asset',
+        fileName: 'manifest.json',
+        source: JSON.stringify(template, null, 2),
+      });
+    },
+  };
+}
+
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),
+    pwaManifestPlugin(),
     ...(process.env.NODE_ENV !== 'production' &&
     process.env.REPL_ID !== undefined
       ? [

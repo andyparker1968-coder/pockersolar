@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowUp, Calculator, CircleHelp, Download, RotateCcw, Sun, Zap } from 'lucide-react';
+import { ArrowUp, Calculator, ChevronDown, CircleHelp, Download, RotateCcw, Zap } from 'lucide-react';
 
 type SolarValues = {
   totalSolar: string;
@@ -173,6 +173,7 @@ function DerivedField({
 function App() {
   const [values, setValues] = useState<SolarValues>(loadValues);
   const [touched, setTouched] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(true);
 
   useEffect(() => {
     try {
@@ -281,39 +282,48 @@ function App() {
               }}
               noValidate
             >
-              <div className="flex items-start justify-between gap-4 border-b border-[hsl(var(--border)/.75)] pb-5">
+              <button
+                type="button"
+                className="focus-ring flex w-full items-start justify-between gap-4 border-b border-[hsl(var(--border)/.75)] pb-5 text-left"
+                aria-expanded={setupOpen}
+                aria-controls="solar-setup-fields"
+                data-testid="button-toggle-setup"
+                onClick={() => setSetupOpen((open) => !open)}
+              >
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--primary))]">01 — Your setup</p>
                   <h2 className="mt-2 font-serif text-[26px] font-semibold tracking-[-.04em]">A few figures.</h2>
                 </div>
-                <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]">
-                  <Sun className="h-[19px] w-[19px]" strokeWidth={1.8} />
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]">
+                  <ChevronDown className={`h-[19px] w-[19px] transition-transform duration-200 ${setupOpen ? 'rotate-180' : ''}`} strokeWidth={1.8} />
                 </div>
-              </div>
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <Field id="totalSolar" label="Total amount of solar" hint="Panel capacity" value={values.totalSolar} onChange={(value) => updateValue('totalSolar', value)} error={touched ? errors.totalSolar : undefined} suffix="W" testId="input-total-solar" />
-                <Field id="effectiveOutput" label="Average effective output" hint="Real-world average" value={values.effectiveOutput} onChange={(value) => updateValue('effectiveOutput', value)} error={touched ? errors.effectiveOutput : undefined} suffix="W" testId="input-effective-output" />
-                <div className="sm:col-span-2">
-                  <div className="mb-2 flex items-baseline justify-between gap-3">
-                    <span className="text-[13px] font-bold">Solar output hours</span>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[hsl(var(--muted-foreground))]">Fixed window</span>
+              </button>
+              <div id="solar-setup-fields" hidden={!setupOpen}>
+                <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                  <Field id="totalSolar" label="Total amount of solar" hint="Panel capacity" value={values.totalSolar} onChange={(value) => updateValue('totalSolar', value)} error={touched ? errors.totalSolar : undefined} suffix="W" testId="input-total-solar" />
+                  <Field id="effectiveOutput" label="Average effective output" hint="Real-world average" value={values.effectiveOutput} onChange={(value) => updateValue('effectiveOutput', value)} error={touched ? errors.effectiveOutput : undefined} suffix="W" testId="input-effective-output" />
+                  <div className="sm:col-span-2">
+                    <div className="mb-2 flex items-baseline justify-between gap-3">
+                      <span className="text-[13px] font-bold">Solar output hours</span>
+                      <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[hsl(var(--muted-foreground))]">Fixed window</span>
+                    </div>
+                    <div className="flex min-h-[52px] items-center justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.44)] px-4">
+                      <span className="font-mono text-[15px] font-medium">10:00 <span className="px-1.5 text-[hsl(var(--muted-foreground))]">to</span> 16:00</span>
+                      <span className="rounded-full bg-[hsl(var(--card))] px-2.5 py-1 font-mono text-[10px] text-[hsl(var(--primary))]">6 hours</span>
+                    </div>
+                    <p className="mt-1.5 text-[11px] leading-[1.4] text-[hsl(var(--muted-foreground))]">The estimate uses six effective daylight hours.</p>
                   </div>
-                  <div className="flex min-h-[52px] items-center justify-between rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.44)] px-4">
-                    <span className="font-mono text-[15px] font-medium">10:00 <span className="px-1.5 text-[hsl(var(--muted-foreground))]">to</span> 16:00</span>
-                    <span className="rounded-full bg-[hsl(var(--card))] px-2.5 py-1 font-mono text-[10px] text-[hsl(var(--primary))]">6 hours</span>
-                  </div>
-                  <p className="mt-1.5 text-[11px] leading-[1.4] text-[hsl(var(--muted-foreground))]">The estimate uses six effective daylight hours.</p>
+                  <Field id="homeUsage" label="Average home usage per hour" hint="What home draws each hour" value={values.homeUsage} onChange={(value) => updateValue('homeUsage', value)} error={touched ? errors.homeUsage : undefined} suffix="W" testId="input-home-usage" />
+                  <Field id="costPerKwh" label="Cost per 1,000 W (1 kW)" hint="25p = £0.25 / kWh" value={values.costPerKwh} onChange={(value) => updateValue('costPerKwh', value)} error={touched ? errors.costPerKwh : undefined} prefix="£" testId="input-cost-per-kwh" />
+                  <Field id="feedInTariff" label="Feed-in tariff" hint="Rate paid for exported energy" value={values.feedInTariff} onChange={(value) => updateValue('feedInTariff', value)} error={touched ? errors.feedInTariff : undefined} suffix="p / kWh" testId="input-feed-in-tariff" />
+                  <DerivedField label="Total feed-in watts (kW)" hint="Surplus solar after home usage" value={hasErrors ? '—' : `${formatNumber(feedInKw, 3)} kW`} testId="text-feed-in-kw" />
                 </div>
-                <Field id="homeUsage" label="Average home usage per hour" hint="What home draws each hour" value={values.homeUsage} onChange={(value) => updateValue('homeUsage', value)} error={touched ? errors.homeUsage : undefined} suffix="W" testId="input-home-usage" />
-                <Field id="costPerKwh" label="Cost per 1,000 W (1 kW)" hint="25p = £0.25 / kWh" value={values.costPerKwh} onChange={(value) => updateValue('costPerKwh', value)} error={touched ? errors.costPerKwh : undefined} prefix="£" testId="input-cost-per-kwh" />
-                <Field id="feedInTariff" label="Feed-in tariff" hint="Rate paid for exported energy" value={values.feedInTariff} onChange={(value) => updateValue('feedInTariff', value)} error={touched ? errors.feedInTariff : undefined} suffix="p / kWh" testId="input-feed-in-tariff" />
-                <DerivedField label="Total feed-in watts (kW)" hint="Surplus solar after home usage" value={hasErrors ? '—' : `${formatNumber(feedInKw, 3)} kW`} testId="text-feed-in-kw" />
-              </div>
-              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[hsl(var(--border)/.75)] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="max-w-[280px] text-[11px] leading-[1.45] text-[hsl(var(--muted-foreground))]">Your figures stay in this browser. No account, no upload, no fuss.</p>
-                <button type="button" data-testid="button-reset" onClick={reset} className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-[12px] font-bold text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]">
-                  <RotateCcw className="h-3.5 w-3.5" /> Reset figures
-                </button>
+                <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[hsl(var(--border)/.75)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="max-w-[280px] text-[11px] leading-[1.45] text-[hsl(var(--muted-foreground))]">Your figures stay in this browser. No account, no upload, no fuss.</p>
+                  <button type="button" data-testid="button-reset" onClick={reset} className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-[12px] font-bold text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]">
+                    <RotateCcw className="h-3.5 w-3.5" /> Reset figures
+                  </button>
+                </div>
               </div>
             </form>
 
@@ -385,29 +395,30 @@ function App() {
             </div>
           </section>
 
-          <section className="animate-rise-in delay-3 mt-7 overflow-hidden rounded-[28px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-[var(--shadow-sm)]" aria-live="polite" data-testid="savings-summary">
-            <div className="flex flex-col gap-2 border-b border-[hsl(var(--border))] px-5 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-7">
+          <section className="relative animate-rise-in delay-3 mt-7 overflow-hidden rounded-[28px] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-[var(--shadow-md)]" aria-live="polite" data-testid="savings-summary">
+            <div className="absolute -right-10 -top-12 h-36 w-36 rounded-full border-[18px] border-[hsl(var(--accent)/.26)]" aria-hidden="true" />
+            <div className="relative flex flex-col gap-2 border-b border-[hsl(var(--primary-foreground)/.18)] px-5 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-7">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--primary))]">03 — Potential savings</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--primary-foreground)/.66)]">03 — Potential savings</p>
                 <h2 className="mt-2 font-serif text-[26px] font-semibold tracking-[-.04em]">Your longer-term picture.</h2>
               </div>
-              <p className="max-w-[330px] text-[11px] leading-[1.5] text-[hsl(var(--muted-foreground))]">Based on the same daily output repeating. Includes home-use savings and feed-in earnings.</p>
+              <p className="max-w-[330px] text-[11px] leading-[1.5] text-[hsl(var(--primary-foreground)/.7)]">Based on the same daily output repeating. Includes home-use savings and feed-in earnings.</p>
             </div>
-            <div className="grid sm:grid-cols-3">
+            <div className="relative grid sm:grid-cols-3">
               <div className="px-5 py-6 sm:px-7">
-                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">One day</p>
+                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[hsl(var(--primary-foreground)/.62)]">One day</p>
                 <strong className="mt-3 block font-serif text-[32px] font-semibold tracking-[-.05em]" data-testid="text-benefit-daily">{totalBenefit === null ? '—' : formatPounds(totalBenefit)}</strong>
-                <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">Your daily estimated benefit</p>
+                <p className="mt-1 text-[11px] text-[hsl(var(--primary-foreground)/.7)]">Your daily estimated benefit</p>
               </div>
-              <div className="border-t border-[hsl(var(--border))] px-5 py-6 sm:border-l sm:border-t-0 sm:px-7">
-                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">30 days</p>
-                <strong className="mt-3 block font-serif text-[32px] font-semibold tracking-[-.05em] text-[hsl(var(--primary))]" data-testid="text-benefit-30-days">{thirtyDayBenefit === null ? '—' : formatPounds(thirtyDayBenefit)}</strong>
-                <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">Daily benefit × 30</p>
+              <div className="border-t border-[hsl(var(--primary-foreground)/.18)] px-5 py-6 sm:border-l sm:border-t-0 sm:px-7">
+                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[hsl(var(--primary-foreground)/.62)]">30 days</p>
+                <strong className="mt-3 block font-serif text-[32px] font-semibold tracking-[-.05em]" data-testid="text-benefit-30-days">{thirtyDayBenefit === null ? '—' : formatPounds(thirtyDayBenefit)}</strong>
+                <p className="mt-1 text-[11px] text-[hsl(var(--primary-foreground)/.7)]">Daily benefit × 30</p>
               </div>
-              <div className="border-t border-[hsl(var(--border))] px-5 py-6 sm:border-l sm:border-t-0 sm:px-7">
-                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">One year</p>
-                <strong className="mt-3 block font-serif text-[32px] font-semibold tracking-[-.05em] text-[hsl(var(--primary))]" data-testid="text-benefit-year">{annualBenefit === null ? '—' : formatPounds(annualBenefit)}</strong>
-                <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">Daily benefit × 365</p>
+              <div className="border-t border-[hsl(var(--primary-foreground)/.18)] px-5 py-6 sm:border-l sm:border-t-0 sm:px-7">
+                <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[hsl(var(--primary-foreground)/.62)]">One year</p>
+                <strong className="mt-3 block font-serif text-[32px] font-semibold tracking-[-.05em]" data-testid="text-benefit-year">{annualBenefit === null ? '—' : formatPounds(annualBenefit)}</strong>
+                <p className="mt-1 text-[11px] text-[hsl(var(--primary-foreground)/.7)]">Daily benefit × 365</p>
               </div>
             </div>
           </section>
