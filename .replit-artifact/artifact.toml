@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/pocket-solar/"
+title = "Pocket Solar"
+description = "A simple solar savings calculator for estimating daily grid-cost savings from solar output and average home usage."
+version = "1.0.0"
+id = "artifacts/pocket-solar"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/pocket-solar/" ]
+localPort = 18124
+
+[services.development]
+run = "pnpm --filter @workspace/pocket-solar run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pocket-solar", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/pocket-solar/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18124"
+BASE_PATH = "/pocket-solar/"
