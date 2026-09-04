@@ -197,8 +197,8 @@
                 </div>
                 <div class="field">
                   <label for="feedInTariff">Feed-in tariff <span>Rate paid for exported energy</span></label>
-                  <div class="input-wrap"><input id="feedInTariff" type="number" min="0" step="any" value="0.12"><span class="suffix">p / kWh</span></div>
-                  <p class="hint">Rate paid for exported energy</p>
+                  <div class="input-wrap prefix"><input id="feedInTariff" type="number" min="0" step="any" value="0.12"><span class="suffix">/ kWh</span></div>
+                  <p class="hint">12p = £0.12 / kWh</p>
                 </div>
                 <div class="field">
                   <div class="derived-label">Total feed-in watts (kW) <span>Calculated</span></div>
@@ -229,7 +229,7 @@
                 <div class="row"><span>Total feed-in watts</span><strong id="feedInBreakdown">2.2 kW</strong></div>
                 <div class="row"><span>Feed-in earnings</span><strong id="feedInEarnings">£0.02</strong></div>
                 <div class="row total"><strong>Total benefit</strong><strong id="totalBreakdown">£0.02</strong></div>
-                <div class="formula">Home savings = (solar used at home / 1,000) × (grid cost per kWh × output hours)<strong id="homeFormula">(1,000 ÷ 1,000) × (£0.00 × 6)</strong>Feed-in earnings = (surplus / 1,000) × (feed-in tariff ÷ 100 × output hours)<strong id="feedFormula">(2.2 × 0.12p ÷ 100) × 6</strong></div>
+                <div class="formula">Home savings = (solar used at home / 1,000) × (grid cost per kWh × output hours)<strong id="homeFormula">(1,000 ÷ 1,000) × (£0.00 × 6)</strong>Feed-in earnings = surplus (kW) × feed-in tariff (£/kWh) × output hours<strong id="feedFormula">(2.2 × £0.12 × 6)</strong></div>
               </div>
             </section>
           </div>
@@ -280,7 +280,7 @@
           var tariff = read('feedInTariff');
           var homeSavings = covered / 1000 * cost * outputHours;
           var surplusKw = Math.max(effective - usage, 0) / 1000;
-          var earnings = surplusKw * (tariff / 100) * outputHours;
+          var earnings = surplusKw * tariff * outputHours;
           var total = homeSavings + earnings;
           set('totalBenefit', money(total));
           set('daylightHours', number(outputHours, 2) + ' hours');
@@ -294,7 +294,7 @@
           set('feedInEarnings', money(earnings));
           set('totalBreakdown', money(total));
           set('homeFormula', '(' + number(covered) + ' ÷ 1,000) × (' + money(cost) + ' × ' + number(outputHours, 2) + ')');
-          set('feedFormula', '(' + number(surplusKw, 3) + ' × ' + number(tariff, 2) + 'p ÷ 100) × ' + number(outputHours, 2));
+          set('feedFormula', '(' + number(surplusKw, 3) + ' × £' + number(tariff, 2) + ' × ' + number(outputHours, 2) + ')');
           set('benefitCopy', effective < usage ? 'Home-use savings for one day, based on ' + number(outputHours, 0) + ' useful daylight hours.' : 'Home-use savings plus earnings from surplus energy exported in one day.');
           try { localStorage.setItem('pocket-solar-standalone', JSON.stringify(ids.reduce(function (all, id) { all[id] = document.getElementById(id).value; return all; }, {}))); } catch (_) {}
         };
