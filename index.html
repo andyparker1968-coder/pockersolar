@@ -153,8 +153,8 @@
           </div>
           <div class="daylight">
             <span class="eyebrow">The daylight window</span>
-            <strong>10:00 — 16:00</strong>
-            <p>Six effective output hours, kept deliberately simple.</p>
+            <strong id="daylightHours">6 hours</strong>
+            <p>Useful daylight hours used in the estimate.</p>
           </div>
         </section>
 
@@ -180,9 +180,9 @@
                   <p class="hint">Real-world average</p>
                 </div>
                 <div class="field full">
-                  <div class="derived-label">Solar output hours <span>Fixed window</span></div>
-                  <div class="derived fixed-window"><strong>10:00&nbsp; to &nbsp;16:00</strong><em>6 hours</em></div>
-                  <p class="hint">The estimate uses six effective daylight hours.</p>
+                  <label for="outputHours">Solar output hours <span>Useful daylight</span></label>
+                  <div class="input-wrap"><input id="outputHours" type="number" min="0" step="any" value="6"><span class="suffix">hours</span></div>
+                  <p class="hint">Hours of useful daylight</p>
                 </div>
                 <div class="field">
                   <label for="homeUsage">Average home usage per hour <span>What home draws each hour</span></label>
@@ -224,11 +224,11 @@
               <div class="breakdown-head"><span class="section-label">The quick breakdown</span><span>GBP / day</span></div>
               <div class="breakdown-rows">
                 <div class="row"><span>Solar used at home</span><strong id="homeCovered">1,000 W</strong></div>
-                <div class="row"><span>Grid cost × output hours</span><strong id="rateHours">£0.25 / kWh × 6 hrs</strong></div>
+                <div class="row"><span>Grid cost × output hours</span><strong id="rateHours">£0.00 / kWh × 6 hrs</strong></div>
                 <div class="row"><span>Total feed-in watts</span><strong id="feedInBreakdown">2.2 kW</strong></div>
                 <div class="row"><span>Feed-in earnings</span><strong id="feedInEarnings">£0.02</strong></div>
                 <div class="row total"><strong>Total benefit</strong><strong id="totalBreakdown">£0.02</strong></div>
-                <div class="formula">Home savings = (solar used at home / 1,000) × (grid cost per kWh × output hours)<strong id="homeFormula">(1,000 ÷ 1,000) × (£0.25 × 6)</strong>Feed-in earnings = (surplus / 1,000) × (feed-in tariff ÷ 100 × output hours)<strong id="feedFormula">(2.2 × 0.12p ÷ 100) × 6</strong></div>
+                <div class="formula">Home savings = (solar used at home / 1,000) × (grid cost per kWh × output hours)<strong id="homeFormula">(1,000 ÷ 1,000) × (£0.00 × 6)</strong>Feed-in earnings = (surplus / 1,000) × (feed-in tariff ÷ 100 × output hours)<strong id="feedFormula">(2.2 × 0.12p ÷ 100) × 6</strong></div>
               </div>
             </section>
           </div>
@@ -251,8 +251,8 @@
     </div>
     <script>
       (function () {
-        var ids = ['totalSolar', 'effectiveOutput', 'homeUsage', 'costPerKwh', 'feedInTariff'];
-        var defaults = { totalSolar: '4000', effectiveOutput: '3200', homeUsage: '1000', costPerKwh: '0.00', feedInTariff: '0.12' };
+        var ids = ['totalSolar', 'effectiveOutput', 'outputHours', 'homeUsage', 'costPerKwh', 'feedInTariff'];
+        var defaults = { totalSolar: '4000', effectiveOutput: '3200', outputHours: '6', homeUsage: '1000', costPerKwh: '0.00', feedInTariff: '0.12' };
         var money = function (value) {
           return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(value));
         };
@@ -271,7 +271,7 @@
             set('benefitCopy', 'Complete the figures to see your estimate.');
             return;
           }
-          var outputHours = 6;
+          var outputHours = read('outputHours');
           var effective = read('effectiveOutput');
           var usage = read('homeUsage');
           var covered = Math.min(effective, usage);
@@ -282,18 +282,19 @@
           var earnings = surplusKw * (tariff / 100) * outputHours;
           var total = homeSavings + earnings;
           set('totalBenefit', money(total));
+          set('daylightHours', number(outputHours, 2) + ' hours');
           set('dailyBenefit', money(total));
           set('monthlyBenefit', money(total * 30));
           set('annualBenefit', money(total * 365));
           set('homeCovered', number(covered) + ' W');
-          set('rateHours', money(cost) + ' / kWh × 6 hrs');
+          set('rateHours', money(cost) + ' / kWh × ' + number(outputHours, 2) + ' hrs');
           set('feedInKw', number(surplusKw, 3) + ' kW');
           set('feedInBreakdown', number(surplusKw, 3) + ' kW');
           set('feedInEarnings', money(earnings));
           set('totalBreakdown', money(total));
-          set('homeFormula', '(' + number(covered) + ' ÷ 1,000) × (' + money(cost) + ' × 6)');
-          set('feedFormula', '(' + number(surplusKw, 3) + ' × ' + number(tariff, 2) + 'p ÷ 100) × 6');
-          set('benefitCopy', effective < usage ? 'Home-use savings for one day, based on the six-hour daylight window.' : 'Home-use savings plus earnings from surplus energy exported in one day.');
+          set('homeFormula', '(' + number(covered) + ' ÷ 1,000) × (' + money(cost) + ' × ' + number(outputHours, 2) + ')');
+          set('feedFormula', '(' + number(surplusKw, 3) + ' × ' + number(tariff, 2) + 'p ÷ 100) × ' + number(outputHours, 2));
+          set('benefitCopy', effective < usage ? 'Home-use savings for one day, based on ' + number(outputHours, 0) + ' useful daylight hours.' : 'Home-use savings plus earnings from surplus energy exported in one day.');
           try { localStorage.setItem('pocket-solar-standalone', JSON.stringify(ids.reduce(function (all, id) { all[id] = document.getElementById(id).value; return all; }, {}))); } catch (_) {}
         };
         try {
