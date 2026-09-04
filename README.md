@@ -1,31 +1,13 @@
-# Pocket Solar
+# Pocket Solar — standalone webpage
 
-This ZIP contains the Pocket Solar website project.
+This folder is a complete, dependency-free version of Pocket Solar.
 
-## Included
+## Open it directly
 
-- React/Vite source in `src/`
-- Website assets in `public/`
-- HTML, TypeScript, Vite, Tailwind, and Replit configuration
-- The Pocket Solar logo
+Double-click `index.html`, or open it in any modern browser. It works from a local `file://` URL and keeps figures in that browser's local storage.
 
-## Run it in this workspace
+## Deploy it manually
 
-Place this folder at `artifacts/pocket-solar` in the Pocket Apps workspace, then run:
+Upload `index.html` to any basic static website host and use it as the site's home page. No Node.js, npm, Vite, server, database, or environment variables are needed.
 
-```bash
-pnpm install
-PORT=5173 BASE_PATH=/pocket-solar/ pnpm run build
-```
-
-For development, use:
-
-```bash
-PORT=5173 BASE_PATH=/pocket-solar/ pnpm run dev
-```
-
-The calculator is frontend-only. It keeps the current figures in the browser's local storage and does not require an account or server.
-
-## Important
-
-This export is intended to be used with the Pocket Apps workspace because the package metadata uses the workspace's shared dependency catalog. The ZIP does not include `node_modules`, build output, or private environment values.
+The standalone export is intentionally self-contained: its CSS and JavaScript are inside the HTML file.
